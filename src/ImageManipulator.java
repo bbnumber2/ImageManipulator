@@ -17,6 +17,7 @@ import javafx.scene.image.WritableImage;
 import javafx.scene.layout.BorderPane;
 import javafx.scene.layout.HBox;
 import javafx.scene.paint.Color;
+import javafx.stage.FileChooser;
 import javafx.stage.Stage;
 
 public class ImageManipulator extends Application implements ImageManipulatorInterface{
@@ -31,16 +32,23 @@ public class ImageManipulator extends Application implements ImageManipulatorInt
         Label label = new Label();
         ImageView view = new ImageView();
         label.setGraphic(view);
-        try {
-            view.setImage(loadImage("src/Images/goldhill.ppm"));
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
+        
         HBox hbox = new HBox(10);
         hbox.setPadding(new Insets(10));
         hbox.setAlignment(Pos.CENTER);
         root.setBottom(hbox);
         Button load = new Button("Load Image");
+        load.setOnAction(event -> {
+            FileChooser fileChooser = new FileChooser();
+            File file = fileChooser.showOpenDialog(primaryStage);
+            try {
+                view.setImage(loadImage((file.getAbsolutePath())));
+            } catch (FileNotFoundException e) {
+                //TODO: handle exception
+            }
+            label.setGraphic(view);
+
+        });
         Button save = new Button("Save Image");
         Button invert = new Button("Invert Image");
         invert.setOnAction(event -> {
