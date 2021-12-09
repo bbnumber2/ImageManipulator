@@ -31,6 +31,8 @@ public class ImageManipulator extends Application implements ImageManipulatorInt
 
         Label label = new Label();
         ImageView view = new ImageView();
+        view.fitWidthProperty().bind(root.widthProperty().subtract(50));
+        view.fitHeightProperty().bind(root.heightProperty().subtract(50));
         label.setGraphic(view);
         
         HBox hbox = new HBox(10);
@@ -89,8 +91,7 @@ public class ImageManipulator extends Application implements ImageManipulatorInt
 
         root.setCenter(label);
 
-        Scene scene = new Scene(root, 1000, 800);
-        primaryStage.setResizable(false);
+        Scene scene = new Scene(root, 700, 500);
         primaryStage.setTitle("Image Manipulator Inator");
         primaryStage.setScene(scene);
         primaryStage.show();
@@ -189,7 +190,7 @@ public class ImageManipulator extends Application implements ImageManipulatorInt
         PrintWriter writer = new PrintWriter(file);
         PixelReader reader = image.getPixelReader();
         writer.println("P3");
-        writer.println("# " + filename);
+        writer.println("# " + file.getName());
         writer.printf("%d %d\n", (int) image.getWidth(), (int) image.getHeight());
         writer.println(255);
         for(int y = 0; y < image.getHeight(); y++){
@@ -227,7 +228,7 @@ public class ImageManipulator extends Application implements ImageManipulatorInt
                 // Color color = reader.getColor(x, y).grayscale()
                 // Cannot use the above because a specific rgb formula is given
                 Color color = reader.getColor(x, y);
-                double brightness = 0.2989*color.getRed() + 0.5870*color.getGreen() + 0.1140*color.getBlue();
+                double brightness = Math.floor((0.2989 * color.getRed()*255 + 0.5870 * color.getGreen()*255 + 0.1140 * color.getBlue()*255)) / 255;
                 Color grayifiedColor = new Color(brightness, brightness, brightness, 1.0);
                 writer.setColor(x, y, grayifiedColor);
             }
