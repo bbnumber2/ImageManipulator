@@ -39,6 +39,7 @@ public class ImageManipulator extends Application implements ImageManipulatorInt
         hbox.setPadding(new Insets(10));
         hbox.setAlignment(Pos.CENTER);
         root.setBottom(hbox);
+        
         Button load = new Button("Load Image");
         load.setOnAction(event -> {
             FileChooser fileChooser = configureFileChooser();
@@ -52,6 +53,7 @@ public class ImageManipulator extends Application implements ImageManipulatorInt
             label.setGraphic(view);
 
         });
+
         Button save = new Button("Save Image");
         save.setOnAction(event -> {
             FileChooser fileChooser = configureFileChooser();
@@ -63,24 +65,28 @@ public class ImageManipulator extends Application implements ImageManipulatorInt
                 //TODO: handle exception
             }
         });
+
         Button invert = new Button("Invert Image");
         invert.setOnAction(event -> {
             view.setImage(invertImage((WritableImage) view.getImage()));
             label.setGraphic(view);
 
         });
+
         Button grayify = new Button("Grayify Image");
         grayify.setOnAction(event -> {
             view.setImage(grayifyImage((WritableImage) view.getImage()));
             label.setGraphic(view);
 
         });
+
         Button pixelate = new Button("Pixelate Image");
         pixelate.setOnAction(event -> {
             view.setImage(pixelateImage((WritableImage) view.getImage()));
             label.setGraphic(view);
 
         });
+
         Button flip = new Button("Flip Image");
         flip.setOnAction(event -> {
             view.setImage(flipImage((WritableImage) view.getImage()));
