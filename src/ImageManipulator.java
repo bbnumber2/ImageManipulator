@@ -1,3 +1,10 @@
+/**
+CS1131
+Image Manipulator Assignment
+Ben Papp, Caleb Brinkman, Chance Masar, Ethan Jenkins
+12/9/2021
+*/
+
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.IOException;
