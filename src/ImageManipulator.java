@@ -2,6 +2,7 @@ import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.PrintWriter;
+import java.util.InputMismatchException;
 import java.util.Scanner;
 
 import javafx.application.Application;
@@ -17,6 +18,7 @@ import javafx.scene.image.WritableImage;
 import javafx.scene.layout.BorderPane;
 import javafx.scene.layout.HBox;
 import javafx.scene.paint.Color;
+import javafx.scene.text.Text;
 import javafx.stage.FileChooser;
 import javafx.stage.Stage;
 
@@ -25,16 +27,22 @@ public class ImageManipulator extends Application implements ImageManipulatorInt
         launch(args);
     }
 
+    private Text error;
+
     @Override
     public void start(Stage primaryStage){
         BorderPane root = new BorderPane();
 
         Label label = new Label();
         ImageView view = new ImageView();
-        view.fitWidthProperty().bind(root.widthProperty().subtract(50));
-        view.fitHeightProperty().bind(root.heightProperty().subtract(50));
+        view.fitWidthProperty().bind(root.widthProperty().subtract(75));
+        view.fitHeightProperty().bind(root.heightProperty().subtract(75));
         label.setGraphic(view);
-        
+
+        error = new Text();
+        error.setFill(Color.RED);
+        root.setTop(error);
+
         HBox hbox = new HBox(10);
         hbox.setPadding(new Insets(10));
         hbox.setAlignment(Pos.CENTER);
@@ -43,54 +51,78 @@ public class ImageManipulator extends Application implements ImageManipulatorInt
         Button load = new Button("Load Image");
         load.setOnAction(event -> {
             FileChooser fileChooser = configureFileChooser();
-            // Does not test for the file not being chosen (closing the window)
             File file = fileChooser.showOpenDialog(primaryStage);
-            try {
-                view.setImage(loadImage(file.getAbsolutePath()));
-            } catch (FileNotFoundException e) {
-                //TODO: handle exception
+            if (file != null){
+                try {
+                    view.setImage(loadImage(file.getAbsolutePath()));
+                    error.setText("");
+                } catch (FileNotFoundException e) {
+                    error.setText("File not found!");
+                } catch (InputMismatchException e){
+                    error.setText("Incorrect file format!");
+                }
             }
-            label.setGraphic(view);
 
         });
 
         Button save = new Button("Save Image");
         save.setOnAction(event -> {
             FileChooser fileChooser = configureFileChooser();
-            // Does not test for the file not being chosen (closing the window)
-            File file = fileChooser.showSaveDialog(primaryStage);
-            try {
-                saveImage(file.getAbsolutePath(), (WritableImage)view.getImage());
-            } catch (FileNotFoundException e) {
-                //TODO: handle exception
+            if(view.getImage() == null){
+                error.setText("No image loaded!");
+            } else{
+                File file = fileChooser.showSaveDialog(primaryStage);
+                if(file != null){
+                    try {
+                        saveImage(file.getAbsolutePath(), (WritableImage)view.getImage());
+                        error.setText("");
+                    } catch (FileNotFoundException e) {
+                        error.setText("File not found!");
+                    }
+                }
             }
         });
 
         Button invert = new Button("Invert Image");
         invert.setOnAction(event -> {
-            view.setImage(invertImage((WritableImage) view.getImage()));
-            label.setGraphic(view);
+            if(view.getImage() == null){
+                error.setText("No image loaded!");
+            } else{
+                view.setImage(invertImage((WritableImage) view.getImage()));
+                error.setText("");
+            }
 
         });
 
         Button grayify = new Button("Grayify Image");
         grayify.setOnAction(event -> {
-            view.setImage(grayifyImage((WritableImage) view.getImage()));
-            label.setGraphic(view);
-
+            if(view.getImage() == null){
+                error.setText("No image loaded!");
+            } else{
+                view.setImage(grayifyImage((WritableImage) view.getImage()));
+                error.setText("");
+            }
         });
 
         Button pixelate = new Button("Pixelate Image");
         pixelate.setOnAction(event -> {
-            view.setImage(pixelateImage((WritableImage) view.getImage()));
-            label.setGraphic(view);
+            if(view.getImage() == null){
+                error.setText("No image loaded!");
+            } else{
+                view.setImage(pixelateImage((WritableImage) view.getImage()));
+                error.setText("");
+            }
 
         });
 
         Button flip = new Button("Flip Image");
         flip.setOnAction(event -> {
-            view.setImage(flipImage((WritableImage) view.getImage()));
-            label.setGraphic(view);
+            if(view.getImage() == null){
+                error.setText("No image loaded!");
+            } else{
+                view.setImage(flipImage((WritableImage) view.getImage()));
+                error.setText("");
+            }
 
         });
         hbox.getChildren().addAll(load, save, invert, grayify, pixelate, flip);
@@ -115,20 +147,20 @@ public class ImageManipulator extends Application implements ImageManipulatorInt
     }
 
     @Override
-    public WritableImage loadImage(String filename) throws FileNotFoundException {
+    public WritableImage loadImage(String filename) throws FileNotFoundException, InputMismatchException {
         File file = cleanFile(filename);
         Scanner scanner = new Scanner(file);
         if(!scanner.nextLine().equals("P3")){
-            //TODO: Handle incorrect format
-            System.out.println("Incorrect format!");
+            scanner.close();
+            throw new InputMismatchException();
         }
-        // Assumes files are not corrupted
         int width = scanner.nextInt();
         int height = scanner.nextInt();
+        double maxColor = scanner.nextInt();
 
-        double maxColor = scanner.nextDouble();
         if(maxColor != 255){
-            // TODO: Handle incorrect maxColor
+            scanner.close();
+            throw new InputMismatchException();
         }
 
         WritableImage out = new WritableImage(width, height);
@@ -140,11 +172,15 @@ public class ImageManipulator extends Application implements ImageManipulatorInt
             }
             double red = scanner.nextDouble() / maxColor;
             if(!scanner.hasNextDouble()){
-                // TODO: Handle incorrect format
+                error.setText("Incorrect file format!");
+                scanner.close();
+                return null;
             }
             double green = scanner.nextDouble() / maxColor;
             if(!scanner.hasNextDouble()){
-                // TODO: Handle incorrect format
+                error.setText("Incorrect file format!");
+                scanner.close();
+                return null;
             }
             double blue = scanner.nextDouble() / maxColor;
             Color color = new Color(red, green, blue, 1.0);
@@ -174,7 +210,7 @@ public class ImageManipulator extends Application implements ImageManipulatorInt
                 return out;
             }
         } catch (IOException e) {
-            //TODO: handle exception
+            error.setText("File failed to load!");
         }
         Scanner scanner = new Scanner(in);
         PrintWriter writer = new PrintWriter(out);
