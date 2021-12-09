@@ -242,25 +242,29 @@ public class ImageManipulator extends Application implements ImageManipulatorInt
         PixelWriter writer = out.getPixelWriter();
         PixelReader reader = image.getPixelReader();
         boolean horizontalEdge = false;
-        for(int x = 2; !horizontalEdge; x += 5){
-            boolean verticalEdge = false;
-            if(x >= image.getWidth()){
+        boolean verticalEdge = false;
+        for(int x = 2, y = 2; y < (int) image.getHeight() ; x += 5){
+            if (x >= (int) image.getWidth()) {
+                x = (int) image.getWidth()-1;
                 horizontalEdge = true;
-                x = (int)image.getWidth() - 1;
             }
-            for(int y = 2; !verticalEdge; y += 5){
-                if(y >= image.getHeight()){
-                    verticalEdge = true;
-                    y = (int)image.getHeight() - 1;
+            if (y >= (int) image.getHeight()) {
+                y = (int) image.getHeight()-1;
+                verticalEdge = true;
+            }
+            for(int a = x-2, b = y-2; b <= ((verticalEdge) ? y : (y+2 >= (int) image.getHeight()) ? (int) image.getHeight()-1: y+2 ); a++) {
+                if (!horizontalEdge && !((x+2 >= (int) image.getWidth()))) {
+                    writer.setColor(a, b, reader.getColor(x, y));
                 }
-                Color center = reader.getColor(x, y);
-                int maxX = x + 2 > image.getWidth() ? (int)image.getWidth() - 1 : x + 2;
-                int maxY = y + 2 > image.getHeight() ? (int)image.getHeight() - 1 : y + 2;
-                for(int i = x-2; i <= maxX; i++){
-                    for(int j = y-2; j <= maxY; j++){
-                        writer.setColor(i, j, center);
-                    }
+                if(a >= ((horizontalEdge) ? x : (x+2 >= (int) image.getWidth()) ? (int) image.getWidth()-1: x+2 )) {
+                    a = x-3;
+                    b++;
                 }
+            }
+            if (horizontalEdge || (x+2 >= (int) image.getWidth()) ) {
+                x = -3;
+                y+=5;
+                horizontalEdge = false;
             }
         }
         return out;
