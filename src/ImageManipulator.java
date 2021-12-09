@@ -39,10 +39,11 @@ public class ImageManipulator extends Application implements ImageManipulatorInt
         root.setBottom(hbox);
         Button load = new Button("Load Image");
         load.setOnAction(event -> {
-            FileChooser fileChooser = new FileChooser();
+            FileChooser fileChooser = configureFileChooser();
+            // Does not test for the file not being chosen (closing the window)
             File file = fileChooser.showOpenDialog(primaryStage);
             try {
-                view.setImage(loadImage((file.getAbsolutePath())));
+                view.setImage(loadImage(file.getAbsolutePath()));
             } catch (FileNotFoundException e) {
                 //TODO: handle exception
             }
@@ -50,6 +51,16 @@ public class ImageManipulator extends Application implements ImageManipulatorInt
 
         });
         Button save = new Button("Save Image");
+        save.setOnAction(event -> {
+            FileChooser fileChooser = configureFileChooser();
+            // Does not test for the file not being chosen (closing the window)
+            File file = fileChooser.showSaveDialog(primaryStage);
+            try {
+                saveImage(file.getAbsolutePath(), (WritableImage)view.getImage());
+            } catch (FileNotFoundException e) {
+                //TODO: handle exception
+            }
+        });
         Button invert = new Button("Invert Image");
         invert.setOnAction(event -> {
             view.setImage(invertImage((WritableImage) view.getImage()));
@@ -83,6 +94,17 @@ public class ImageManipulator extends Application implements ImageManipulatorInt
         primaryStage.setTitle("Image Manipulator Inator");
         primaryStage.setScene(scene);
         primaryStage.show();
+    }
+
+    private FileChooser configureFileChooser(){
+        FileChooser fileChooser = new FileChooser();
+        fileChooser.getExtensionFilters().add(
+            new FileChooser.ExtensionFilter("PPM", "*.ppm")
+        );
+        fileChooser.setInitialDirectory(
+            new File(System.getProperty("user.home"))
+        );
+        return fileChooser;
     }
 
     @Override
